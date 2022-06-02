@@ -1,14 +1,39 @@
-var map = L.map('map-template').setView([-17.382535, -66.145793],17)
+var map = L.map('map-template').setView([-17.383952, -66.157116],17)
 
 
 const socket = io();
 
-//Function for get serial data
+//Funcion para obtener datos por puerto serial
 
 socket.on('temp', function (data) {
-    console.log(data);
-    let temp = document.getElementById('temperature')
-    temp.innerHTML = `Pos ${data}`
+
+    //console.log(data);
+    //let potenciometroDer = document.getElementById('potenciometroDer');
+    let potenciometroDerGrados = document.getElementById('potenciometroDerGrados');
+    let potenciometroIzqGrados = document.getElementById('potenciometroIzqGrados');
+    let ritmoCardiaco = document.getElementById('ritmoCardiaco');
+    let saturacion = document.getElementById('saturacion')
+    //temp.innerHTML = `Pos ${data}`
+    const serialData = data;
+    const obj = JSON.parse(serialData);
+    ritmoCardiaco.innerHTML = obj.ritmoCardiaco;
+    //potenciometroDer.innerHTML = obj.sensorValor1;
+    potenciometroDerGrados.innerHTML = obj.sensorValorGrados1 + " °";
+    potenciometroIzqGrados.innerHTML = obj.sensorValorGrados2 + " °"
+    // potenciometroIzq.innerHTML = obj.sensorValor2;
+    saturacion.innerHTML = obj.sp02;
+    if(obj.sensorValorGrados1 >= 89 || obj.sensorValorGrados2 >= 89 || obj.ritmoCardiaco >=110){
+        
+        Swal.fire({
+            
+            icon: 'warning',
+            title: 'Valores fuera del parametro normal',
+            showConfirmButton: false,
+            timer: 2000
+          })
+          
+    }
+    //console.log(obj);
 });
 
 
@@ -21,6 +46,7 @@ map.locate({enableHighAccuracy: true});
 map.on('locationfound', e =>{
     const coords = [e.latlng.lat, e.latlng.lng];
     const marker = L.marker(coords);
+    //console.log(coords)
     marker.bindPopup('You are here!');
     map.addLayer(marker);
     socket.emit('userCoordinates', e.latlng);
